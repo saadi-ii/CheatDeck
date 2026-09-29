@@ -15,11 +15,15 @@ const sectionSchema = z.object({
   blocks: z.array(blockSchema).default([]),
 });
 
+// Slugs that would collide with app routes (/admin, /api, /admin/new, /admin/login).
+const RESERVED_SLUGS = ["admin", "api", "new", "login"];
+
 export const slugSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and dashes");
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and dashes")
+  .refine((slug) => !RESERVED_SLUGS.includes(slug), "This slug is reserved");
 
 /** Body for both create (POST) and full save (PUT). */
 export const cheatsheetBodySchema = z.object({
