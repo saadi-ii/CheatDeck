@@ -22,6 +22,8 @@ export default function Playground({ code, language }: PlaygroundProps) {
       theme={dark ? "dark" : "light"}
       files={{ [config.entry]: { code, active: true } }}
       options={{
+        // We only mount after a click, so skip Sandpack's own "wait until visible" step.
+        initMode: "immediate",
         showConsole: config.showConsole,
         showConsoleButton: true,
         editorHeight: 320,
