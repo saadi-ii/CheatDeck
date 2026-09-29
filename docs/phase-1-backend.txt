@@ -19,8 +19,11 @@ src/routers/cheatsheet.routes.ts  see routes below
 src/routers/index.ts              mounts all routers under /api
 src/middleware/requireAdmin.ts    verifies JWT cookie
 src/middleware/validate.ts        zod body validation
-src/middleware/errorHandler.ts    one place for error responses
-src/utils/asyncHandler.ts, ApiError.ts
+src/middleware/loginLimiter.ts    in-memory limit: 10 attempts / 15 min / IP
+src/middleware/errorHandler.ts    notFound + one place for error responses
+src/validation/                   zod schemas (auth, cheatsheet)
+src/utils/ApiError.ts, token.ts   error class, JWT + cookie helpers
+(Express 5 forwards async errors itself, so no asyncHandler is needed.)
 
 Routes
 ------
@@ -39,7 +42,7 @@ Rules
 - List returns a summary only (no sections) to stay light.
 - Cookie: httpOnly, sameSite lax, secure in production.
 - Compare admin password with timing-safe compare.
-- Rate-limit login (simple in-memory counter is enough at this size).
+- Login is rate-limited (in-memory counter, enough at this size).
 
 Done when
 ---------
