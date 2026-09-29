@@ -24,8 +24,8 @@ const sectionSchema = z.object({
   blocks: z.array(blockSchema).default([]),
 });
 
-// Slugs that would collide with app routes (/admin, /api, /account, /admin/new, /admin/login).
-const RESERVED_SLUGS = ["admin", "api", "account", "new", "login"];
+// Slugs that would collide with app routes (/admin, /api, /account, /admin/new, /admin/login, /admin/suggestions).
+const RESERVED_SLUGS = ["admin", "api", "account", "new", "login", "suggestions"];
 
 export const slugSchema = z
   .string()
