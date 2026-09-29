@@ -1,12 +1,21 @@
 import { z } from "zod";
 import { BLOCK_TYPES } from "../model/cheatsheet.model.js";
 
+// Empty strings mean "not set", so they are dropped instead of stored.
+const optionalText = z
+  .string()
+  .trim()
+  .optional()
+  .transform((value) => value || undefined);
+
 const blockSchema = z.object({
   id: z.string().min(1).optional(),
   type: z.enum(BLOCK_TYPES),
   content: z.string().default(""),
   language: z.string().optional(),
   runnable: z.boolean().default(false),
+  since: optionalText,
+  deprecated: optionalText,
 });
 
 const sectionSchema = z.object({
