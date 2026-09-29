@@ -2,44 +2,62 @@ PHASE 3 - ADMIN EDITOR
 ======================
 
 Goal: create and edit everything from the browser, with no code changes.
+STATUS: done. Verified end to end in a browser against an in-memory mock of
+the API (login, create, edit, reorder, rename, publish, delete, logout).
 
 Pages
 -----
-app/admin/login/page.tsx     password form
-app/admin/page.tsx           list: new, publish toggle, delete
-app/admin/[slug]/page.tsx    editor for one cheatsheet
-proxy.ts                     redirects /admin/* to login when not signed in
+/admin/login            password form (outside the guarded route group)
+/admin                  list: status badge, edit, view, delete
+/admin/new              title + slug (auto-generated, validated) -> creates a draft
+/admin/[slug]           the editor
+Files: app/admin/layout.tsx (QueryProvider), app/admin/(panel)/layout.tsx
+(AdminGuard + AdminBar), app/admin/login/page.tsx
 
-Files to create
+How auth works
+--------------
+- The browser calls /api/* on its own origin; next.config.ts rewrites that to
+  Express. The cookie is therefore first-party, which also works in
+  production when the frontend and API are on different domains.
+- proxy.ts redirects /admin/* to /admin/login when the session cookie is
+  missing. This is an optimistic check only.
+- AdminGuard calls GET /api/auth/me. A 401 (expired or forged cookie)
+  sends you back to the login page. The API is the real authority.
+- The public site never sends the cookie, so drafts can't leak into caches.
+
+Feature folders
 ---------------
-features/auth/
-  api.ts                      login, logout, me
-  hooks/use-session.ts        TanStack Query around /auth/me
-  components/login-form.tsx   TanStack Form + zod
-features/cheatsheet/
-  hooks/                      use-cheatsheets, use-save-cheatsheet, ...
-  components/admin-table.tsx  list with actions
+features/auth/        api.ts, hooks/use-session.ts, components/login-form.tsx,
+                      components/admin-guard.tsx, constants.ts
+features/cheatsheet/  admin-api.ts (browser calls), hooks/use-cheatsheets.ts
+                      (TanStack Query), lib/slug.ts, components/admin-table.tsx,
+                      components/new-cheatsheet-form.tsx
 features/editor/
-  components/
-    editor-shell.tsx          layout: meta panel + sections
-    meta-form.tsx             title, slug, icon, version, published
-    section-editor.tsx        section title, add/remove/move blocks
-    block-editor.tsx          switches on block.type
-    text-block-editor.tsx     textarea + markdown preview
-    code-block-editor.tsx     language select, code textarea, runnable toggle
-    add-block-menu.tsx        "+" menu (text, code)
-  hooks/use-editor-state.ts   local draft state and reorder helpers
-  lib/reorder.ts              pure move up/down functions
+  lib/reorder.ts        pure swap helper
+  lib/draft-ops.ts      pure, immutable draft operations (unit-checked)
+  lib/languages.ts      languages for code blocks
+  lib/format-issue.ts   "sections.0.title" -> "Section 1 title: ..."
+  hooks/use-draft.ts    draft + saved snapshot + dirty flag + bound actions
+  components/           editor-loader, editor-shell, meta-form, section-editor,
+                        block-editor, text-block-editor, code-block-editor,
+                        reorder-controls
 
-Behavior
---------
-- Editing happens on a local draft. Save sends one PUT with the document.
-- Reordering uses up/down buttons (no drag-and-drop library).
-- Show unsaved-changes warning and a Save button state.
-- Publish toggle switches between draft and published.
-- Invalidate TanStack Query caches after save so lists refresh.
+Editor behavior
+---------------
+- Edits happen on a local draft. Save sends ONE PUT with the whole document.
+- Save is disabled until something changes. Ctrl/Cmd+S also saves.
+- The tab warns before closing with unsaved changes.
+- Sections and blocks are reordered with up/down buttons (no drag-and-drop).
+- Text blocks have Write / Preview tabs (markdown). Code blocks have a
+  language select and a "Runnable in playground" checkbox (used in Phase 4).
+- Publishing is the "Published" checkbox in the editor, saved with the rest.
+- Renaming the slug redirects to the new URL after saving.
+- API validation errors are shown in plain words at the top of the editor.
+- Reserved slugs (admin, api, new, login) are rejected by both API and UI.
 
-Done when
----------
-You can log in, create a cheatsheet, add sections and blocks, reorder,
-save, publish, and see it on the public site.
+Known limits (by design, kept simple)
+-------------------------------------
+- Unsaved-changes warning covers closing the tab, not in-app link clicks.
+- Public pages can be up to a minute stale after a save (fixed in Phase 5
+  with on-demand revalidation).
+- No image upload, no version history.
