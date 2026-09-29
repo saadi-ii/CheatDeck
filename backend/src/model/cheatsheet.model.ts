@@ -10,6 +10,9 @@ const blockSchema = new Schema(
     content: { type: String, default: "" },
     language: { type: String },
     runnable: { type: Boolean, default: false },
+    // Version badges, e.g. since "15" or deprecated "16". Free text so any scheme works.
+    since: { type: String },
+    deprecated: { type: String },
   },
   { _id: false },
 );

@@ -2,33 +2,74 @@ PHASE 5 - POLISH
 ================
 
 Goal: make the site feel finished. All items are independent.
+STATUS: done. Verified end to end in a browser against an in-memory mock that
+reuses the real backend validation, search and revalidate code (only MongoDB
+itself is faked). Not yet run against a real MongoDB.
 
-Items
------
-1. Revalidation (ISR)
-   Public pages are cached. Saving in admin calls a revalidate endpoint so
-   changes appear immediately without hurting speed.
-   Backend calls Next's revalidate route (secret in env) after PUT/DELETE.
+1. INSTANT UPDATES (on-demand revalidation)
+-------------------------------------------
+Problem: public pages are cached for speed, so edits could take a minute to appear.
+Flow: admin saves -> Express saves to Mongo -> Express POSTs to the frontend
+      (CLIENT_URL/api/revalidate, header x-revalidate-secret) -> the route
+      calls revalidateTag("cheatsheets", { expire: 0 }) -> the next request
+      is rendered fresh.
+Files:
+  backend/src/utils/revalidate.ts           notifyFrontend(); never throws
+  backend/src/controller/cheatsheet/*       create, update, remove call it
+  frontend/src/app/api/revalidate/route.ts  protected route (constant-time
+                                            secret check)
+  features/cheatsheet/api.ts                exports CHEATSHEETS_TAG
+Setup: put the SAME value in backend/.env and frontend/.env.local:
+       REVALIDATE_SECRET=<at least 8 characters, keep it private>
+       If it is not set, nothing breaks: pages refresh on the normal 60s cycle.
+Why expire: 0: the recommended "max" profile would show ONE stale page after
+       a save (stale-while-revalidate). expire: 0 makes that first view fresh.
+Note: a save still succeeds if the frontend is unreachable (failure is only
+       logged).
 
-2. Search
-   Mongo text index over title and block content, GET /api/search?q=
-   Frontend: shadcn Command palette opened with Ctrl+K.
+2. SEARCH (Ctrl/Cmd+K)
+----------------------
+GET /api/search?q=...   public, published cheatsheets only
+  - case-insensitive SUBSTRING match ("rout" finds "Routing") over title,
+    description, section titles and block content
+  - returns one hit per matching section, each with a short snippet
+  - input is regex-escaped and capped at 50 chars; minimum 2 chars
+  - deliberately NOT a Mongo text index: text indexes only match whole words,
+    which feels broken in a search-as-you-type box. Substring scanning is fine
+    at personal-site scale. Revisit (Atlas Search / text index) if it grows to
+    thousands of cheatsheets.
+Files:
+  backend/src/utils/search.ts               pure buildHits() + escapeRegex()
+  backend/src/controller/search/, routers/search.routes.ts
+  features/search/  api.ts, hooks/use-search.ts (debounced, abortable),
+                    components/search-button.tsx (Ctrl/Cmd+K),
+                    components/search-dialog.tsx (native <dialog>)
+The dialog code loads only the first time search is opened.
+Keyboard: Up/Down to move, Enter to open, Esc to close.
 
-3. Version badges
-   Per cheatsheet "version" plus optional per-block "since" and
-   "deprecated" fields, shown as small badges. Add stale flag when a
-   cheatsheet has not been updated in 60 days (admin list only).
+3. VERSION BADGES
+-----------------
+- Cheatsheet-level "version" (already existed) shows next to the title.
+- Each block can have "Since X" and "Deprecated in Y" (free text, e.g. 15, 16).
+  Set in the editor above each block; shown as badges above the block.
+  Empty values are removed, so they never show and never count as changes.
+- Admin list flags published cheatsheets not updated for 60 days as "Stale".
+  (features/cheatsheet/lib/freshness.ts, STALE_AFTER_DAYS)
 
-4. Import / export
-   Admin buttons to download a cheatsheet as JSON and upload one.
-   Serves as backup and makes bulk seeding easy.
+4. IMPORT / EXPORT (JSON)
+-------------------------
+- Editor: "Export" downloads the current draft as <slug>.json.
+- Cheatsheets list: "Import JSON" creates a cheatsheet from such a file.
+  The API validates it and refuses an existing slug (no silent overwrite).
+- Use it as a backup, to copy between environments, or to bulk-seed content.
 
-5. Extras (only if wanted)
-   - Table block type
-   - Per-section anchor links
-   - SEO metadata and OpenGraph image per cheatsheet
+5. EXTRAS - decided NOT to build (kept lean)
+--------------------------------------------
+Table block type (markdown tables already work), OpenGraph images, per-section
+anchors (section links already work through the search and the side nav).
 
 Done when
 ---------
-Edits show up on the public site instantly, Ctrl+K finds any block, and
-badges show which features are new or deprecated.
+Edits show up on the public site on the next visit, Ctrl+K finds any block,
+badges show what is new or deprecated, and a cheatsheet can be exported and
+re-imported.

@@ -26,6 +26,8 @@ export function fromCheatsheet(doc: Cheatsheet): Draft {
         content: block.content,
         ...(block.language ? { language: block.language } : {}),
         runnable: block.runnable,
+        ...(block.since ? { since: block.since } : {}),
+        ...(block.deprecated ? { deprecated: block.deprecated } : {}),
       })),
     })),
   };
@@ -80,8 +82,14 @@ export const updateBlock = (
 ): Draft =>
   mapSection(draft, sectionId, (section) => ({
     ...section,
-    blocks: section.blocks.map((block) => (block.id === blockId ? { ...block, ...patch } : block)),
+    blocks: section.blocks.map((block) => (block.id === blockId ? cleanBlock({ ...block, ...patch }) : block)),
   }));
+
+/** Removes empty optional badge fields so "typed then cleared" equals "never set" (keeps dirty tracking honest). */
+function cleanBlock(block: Block): Block {
+  const { since, deprecated, ...rest } = block;
+  return { ...rest, ...(since ? { since } : {}), ...(deprecated ? { deprecated } : {}) };
+}
 
 export const removeBlock = (draft: Draft, sectionId: string, blockId: string): Draft =>
   mapSection(draft, sectionId, (section) => ({

@@ -8,6 +8,8 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(8),
   ADMIN_PASSWORD: z.string().min(1),
   CLIENT_URL: z.string().default("http://localhost:3000"),
+  // Shared with the frontend; when unset, the frontend is not pinged after saves.
+  REVALIDATE_SECRET: z.string().min(8).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

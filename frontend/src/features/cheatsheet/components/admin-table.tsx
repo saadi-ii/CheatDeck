@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCheatsheets, useDeleteCheatsheet } from "../hooks/use-cheatsheets";
+import { STALE_AFTER_DAYS } from "../lib/freshness";
 
 export function AdminTable() {
   const { data, isPending, error } = useCheatsheets();
@@ -43,10 +44,15 @@ export function AdminTable() {
               {item.icon} {item.title}
             </TableCell>
             <TableCell className="text-muted-foreground">{item.slug}</TableCell>
-            <TableCell>
+            <TableCell className="space-x-1">
               <Badge variant={item.published ? "default" : "secondary"}>
                 {item.published ? "Published" : "Draft"}
               </Badge>
+              {item.stale && (
+                <Badge variant="outline" title={`Not updated in over ${STALE_AFTER_DAYS} days. Check it against the latest docs.`}>
+                  Stale
+                </Badge>
+              )}
             </TableCell>
             <TableCell className="text-muted-foreground">
               {new Date(item.updatedAt).toLocaleDateString()}

@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Block } from "@/features/cheatsheet/types";
+import { isRunnableLanguage } from "@/features/playground/lib/templates";
 import { LANGUAGES } from "../lib/languages";
 
 interface CodeBlockEditorProps {
@@ -12,6 +13,8 @@ interface CodeBlockEditorProps {
 }
 
 export function CodeBlockEditor({ block, onChange }: CodeBlockEditorProps) {
+  const canRun = isRunnableLanguage(block.language);
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-4">
@@ -31,12 +34,14 @@ export function CodeBlockEditor({ block, onChange }: CodeBlockEditorProps) {
         <div className="flex items-center gap-2">
           <Checkbox
             id={`${block.id}-runnable`}
-            checked={block.runnable}
+            checked={block.runnable && canRun}
+            disabled={!canRun}
             onCheckedChange={(checked) => onChange({ runnable: checked === true })}
           />
           <Label htmlFor={`${block.id}-runnable`} className="text-sm font-normal">
             Runnable in playground
           </Label>
+          {!canRun && <span className="text-xs text-muted-foreground">(TSX, JSX, TS and JS only)</span>}
         </div>
       </div>
 

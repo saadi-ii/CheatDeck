@@ -2,39 +2,46 @@ PHASE 4 - PLAYGROUND
 ====================
 
 Goal: let readers edit and run code blocks in the browser.
+STATUS: done. Verified in a browser (Run button, lazy chunks, editor, preview).
 
 Approach
 --------
 Sandpack (CodeSandbox's in-browser bundler). It runs JS, TS and React fully
-in the browser with no backend. It is lazy-loaded so normal readers never
-download it.
+in the browser with no backend of ours. No user code ever runs on our server.
 
-Files to create
----------------
-features/playground/
-  components/playground.tsx       Sandpack wrapper (client component)
-  components/run-button.tsx       "Run" toggle shown on runnable blocks
-  lib/templates.ts                map block.language -> Sandpack template
-                                  (vanilla, vanilla-ts, react, react-ts)
-Update:
-  features/cheatsheet/components/code-block.tsx
-    if block.runnable, show Run button; on click dynamic-import playground.
-  features/editor/components/code-block-editor.tsx
-    runnable toggle plus template select.
-
-Rules
+Files
 -----
-- Use next/dynamic with ssr: false so Sandpack loads only on demand.
-- Only blocks marked runnable get a Run button.
-- No user code ever runs on the server.
+features/playground/lib/templates.ts
+    language -> Sandpack template:
+      tsx -> react-ts (preview)     jsx -> react (preview)
+      ts  -> vanilla-ts (console)   js  -> vanilla (console)
+    isRunnableLanguage() is the single source of truth for "can this run".
+features/playground/components/playground.tsx
+    the Sandpack wrapper (default export so it can be lazy loaded)
+features/playground/components/playground-toggle.tsx
+    "Run in playground" / "Close" button; loads Playground with next/dynamic
+    (ssr: false) only when clicked
+features/cheatsheet/components/code-block.tsx
+    shows the toggle when block.runnable is true AND the language is supported
+features/editor/components/code-block-editor.tsx
+    the "Runnable" checkbox is disabled for unsupported languages
+
+How runnable blocks should be written
+-------------------------------------
+- tsx / jsx: a complete component with `export default function App()`.
+- ts / js: plain code; use console.log to see output in the console panel.
+
+Notes
+-----
+- Sandpack is ~1 MB but lives in separate chunks. Verified: the initial page
+  load contains zero Sandpack code; the chunks download on the first click.
+- initMode is "immediate" because the component only mounts after a click.
+- Sandpack fetches its bundler from codesandbox.io, so the playground needs
+  internet access.
+- Theme (light/dark) is read when the playground opens.
 
 Later options (not part of this phase)
 --------------------------------------
-- WebContainers for real Next.js runtime (needs COOP/COEP headers scoped to
+- WebContainers for a real Next.js runtime (needs COOP/COEP headers scoped to
   a playground route, Chromium-first).
 - Piston or Judge0 for Python, Java, C++ (needs a small VPS).
-
-Done when
----------
-A runnable JS/React code block opens an editable playground and runs, and
-the home page bundle size is unchanged.

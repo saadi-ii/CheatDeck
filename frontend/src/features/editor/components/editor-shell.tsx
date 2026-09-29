@@ -11,6 +11,7 @@ import { ApiError } from "@/lib/http";
 import { useDraft } from "../hooks/use-draft";
 import { formatIssue } from "../lib/format-issue";
 import { fromCheatsheet } from "../lib/draft-ops";
+import { ExportButton } from "./export-button";
 import { MetaForm } from "./meta-form";
 import { SectionEditor } from "./section-editor";
 
@@ -60,6 +61,7 @@ export function EditorShell({ initial }: { initial: Cheatsheet }) {
           <p className="text-xs text-muted-foreground">{dirty ? "Unsaved changes" : "All changes saved"}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <ExportButton draft={draft} />
           {draft.published && !dirty && (
             <Button variant="ghost" size="sm" render={<Link href={`/${draft.slug}`} target="_blank" />}>
               View
