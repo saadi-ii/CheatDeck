@@ -6,35 +6,44 @@ Goal: readers can browse and read cheatsheets. Fast and mostly static.
 Pages
 -----
 app/page.tsx            home: grid of published cheatsheets
-app/[slug]/page.tsx     one cheatsheet: section sidebar + blocks
-app/not-found.tsx       simple 404
+app/[slug]/page.tsx     one cheatsheet: section nav + blocks
+app/not-found.tsx       404 for missing or draft cheatsheets
+app/error.tsx           friendly error + retry (e.g. API waking up)
 
-Files to create
----------------
-lib/http.ts                       fetch wrapper (base URL, errors)
-lib/query-client.ts               TanStack Query client factory
-providers/query-provider.tsx      QueryClientProvider
-providers/theme-provider.tsx      dark mode
+Files
+-----
+lib/http.ts                       fetch wrapper (API_URL, ApiError, request<T>)
+components/site-header.tsx        brand link + theme toggle
+components/theme-toggle.tsx       client; toggles .dark class, saves to localStorage
+components/ui/                    shadcn: button, card, badge
 features/cheatsheet/types.ts      Cheatsheet, Section, Block types
-features/cheatsheet/api.ts        getCheatsheets, getCheatsheet
+features/cheatsheet/api.ts        getCheatsheets, getCheatsheet (cached 60s, tagged)
 features/cheatsheet/components/
   cheatsheet-card.tsx             card on the home page
-  section-nav.tsx                 sidebar / table of contents
-  block-renderer.tsx              switches on block.type
-  text-block.tsx                  markdown rendering (sanitized)
-  code-block.tsx                  highlighted code + copy button
-components/ui/                    add via shadcn: card, badge, button, ...
+  section-nav.tsx                 "On this page" anchor links
+  block-renderer.tsx              map {type -> component}
+  text-block.tsx                  markdown (react-markdown + GFM, no raw HTML)
+  code-block.tsx                  Shiki highlighting on the server + copy button
+  copy-button.tsx                 the only client JS on the reading pages
 
-Notes
------
-- Server-render pages and fetch on the server (no client JS for reading).
-- Syntax highlighting on the server (Shiki) so it ships no client code.
-- Block renderer is a map {type -> component}. Adding a new block type
-  later means adding one component and one map entry.
-- Before writing Next code, read node_modules/next/dist/docs/ (Next 16
-  differs from older versions; see frontend/AGENTS.md).
+Decisions
+---------
+- Theme: an inline script in the root layout sets the .dark class before
+  paint (no flash, no theme library). The toggle swaps icons with CSS.
+- TanStack Query is NOT loaded on public pages. Its provider and query
+  client arrive with the admin area in Phase 3, so readers ship less JS.
+- Home is prerendered and revalidated every 60s. If the API is unreachable
+  it shows a message instead of failing the build.
+- /[slug] renders on demand; its API fetch is cached for 60s. Phase 5 adds
+  on-demand revalidation by tag when content is saved.
+- Public requests never forward the admin cookie, so drafts can't leak into
+  the cache.
+- Adding a block type = one component + one entry in block-renderer.tsx.
+- Next 16 notes: params is a Promise; PageProps<"/[slug]"> types come from
+  `next typegen` (runs on dev/build).
 
 Done when
 ---------
-Home lists cheatsheets, each page shows sections and blocks, copy button
-and dark mode work, and the page is usable on a phone.
+Home lists cheatsheets, each page shows sections and blocks, copy button and
+dark mode work, and the layout has no horizontal scroll on a phone.
+STATUS: done (verified against a mock API; see note in Phase 1 about the DB).
