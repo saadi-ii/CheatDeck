@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** Mirrors RESERVED_SLUGS in backend/src/validation/cheatsheet.schema.ts. */
-export const RESERVED_SLUGS = ["admin", "api", "new", "login"];
+export const RESERVED_SLUGS = ["admin", "api", "account", "new", "login"];
 
 export function slugify(text: string) {
   return text
