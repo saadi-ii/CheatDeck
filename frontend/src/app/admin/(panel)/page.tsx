@@ -10,7 +10,7 @@ export default function AdminHomePage() {
         <h1 className="text-2xl font-semibold tracking-tight">Cheatsheets</h1>
         <div className="flex flex-wrap items-start gap-2">
           <ImportButton />
-          <Button render={<Link href="/admin/new" />}>New cheatsheet</Button>
+          <Button nativeButton={false} render={<Link href="/admin/new" />}>New cheatsheet</Button>
         </div>
       </div>
       <AdminTable />

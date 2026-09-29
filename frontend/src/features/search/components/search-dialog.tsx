@@ -1,22 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { Modal } from "@/components/modal";
 import { useSearch } from "../hooks/use-search";
 import type { SearchHit } from "../types";
 
-// Default export so next/dynamic can lazy-load it. Uses the native <dialog>, which gives
-// us the backdrop, focus trapping and Esc-to-close without a library.
+// Default export so next/dynamic can lazy-load it.
 export default function SearchDialog({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
   const { enabled, hits, loading, failed } = useSearch(query);
-
-  useEffect(() => {
-    dialogRef.current?.showModal();
-  }, []);
 
   const current = Math.min(selected, Math.max(hits.length - 1, 0));
 
@@ -39,15 +34,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      onClick={(event) => {
-        // A click on the backdrop targets the dialog element itself.
-        if (event.target === dialogRef.current) dialogRef.current?.close();
-      }}
-      className="mx-auto mt-[12vh] mb-auto w-[min(36rem,calc(100%-2rem))] rounded-xl border bg-background p-0 text-foreground shadow-xl backdrop:bg-black/50"
-    >
+    <Modal onClose={onClose} label="Search cheatsheets" className="mt-[12vh]">
       <div onKeyDown={onKeyDown}>
         <input
           autoFocus
@@ -91,6 +78,6 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
           {hits.length > 0 && "↑ ↓ to move, Enter to open, Esc to close"}
         </p>
       </div>
-    </dialog>
+    </Modal>
   );
 }

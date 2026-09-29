@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { getCheatsheet } from "@/features/cheatsheet/api";
 import { BlockRenderer } from "@/features/cheatsheet/components/block-renderer";
 import { SectionNav } from "@/features/cheatsheet/components/section-nav";
+import { SuggestButton } from "@/features/suggestion/components/suggest-button";
 
 export const revalidate = 60;
 
@@ -46,8 +47,23 @@ export default async function CheatsheetPage(props: PageProps<"/[slug]">) {
           <section key={section.id} id={section.id} className="mb-10 scroll-mt-20">
             <h2 className="mb-4 border-b pb-2 text-xl font-semibold">{section.title}</h2>
             {section.blocks.map((block) => (
-              <BlockRenderer key={block.id} block={block} />
+              <div key={block.id}>
+                <BlockRenderer block={block} />
+                <div className="-mt-2 mb-4 flex justify-end">
+                  <SuggestButton
+                    target={{
+                      mode: "edit",
+                      cheatsheetSlug: cheatsheet.slug,
+                      section: { id: section.id, title: section.title },
+                      block: { id: block.id, type: block.type, content: block.content, language: block.language },
+                    }}
+                  />
+                </div>
+              </div>
             ))}
+            <SuggestButton
+              target={{ mode: "add", cheatsheetSlug: cheatsheet.slug, section: { id: section.id, title: section.title } }}
+            />
           </section>
         ))}
       </article>

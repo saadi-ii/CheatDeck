@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SearchButton } from "@/features/search/components/search-button";
+import { UserMenu } from "@/features/user/components/user-menu";
 
 export function SiteHeader() {
   return (
@@ -11,6 +12,7 @@ export function SiteHeader() {
         </Link>
         <div className="flex items-center gap-2">
           <SearchButton />
+          <UserMenu />
           <ThemeToggle />
         </div>
       </div>
