@@ -3,6 +3,7 @@ import authRoutes from "./auth.routes.js";
 import cheatsheetRoutes from "./cheatsheet.routes.js";
 import oauthRoutes from "./oauth.routes.js";
 import searchRoutes from "./search.routes.js";
+import suggestionRoutes from "./suggestion.routes.js";
 import userRoutes from "./user.routes.js";
 
 const router = Router();
@@ -15,5 +16,6 @@ router.use("/oauth", oauthRoutes); // community sign-in
 router.use("/user", userRoutes); // community member session
 router.use("/cheatsheets", cheatsheetRoutes);
 router.use("/search", searchRoutes);
+router.use("/suggestions", suggestionRoutes);
 
 export default router;
