@@ -27,3 +27,6 @@ export interface CheatsheetSummary {
 export interface Cheatsheet extends CheatsheetSummary {
   sections: Section[];
 }
+
+/** What the API accepts for create and save (server-managed fields removed). */
+export type CheatsheetInput = Omit<Cheatsheet, "updatedAt">;
