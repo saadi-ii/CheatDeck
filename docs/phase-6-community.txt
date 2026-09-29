@@ -1,47 +1,104 @@
-PHASE 6 - COMMUNITY (OPTIONAL)
-==============================
+PHASE 6 - COMMUNITY
+===================
 
-Goal: let visitors suggest improvements. You approve every change.
-Only build this if the site gets real users.
+Goal: let visitors suggest improvements. An admin approves every change.
+STATUS: done. Verified end to end in a browser and over HTTP against an
+in-memory mock that reuses the REAL backend code (OAuth helpers, validation,
+apply/view logic, member tokens). Only MongoDB and the network call to
+GitHub were faked. Not yet run against real GitHub/Google or a real MongoDB.
 
-Auth
-----
-GitHub and Google sign-in (redirect flow, not popup). Roles: user, admin.
-Use user.model.ts (already a placeholder in backend/src/model).
-The single admin password login from Phase 1 can then be replaced by an
-admin role.
+How it works
+------------
+1. A visitor clicks "Suggest edit" (under a block) or "Suggest a block" (end of
+   a section). If they are not signed in, the dialog offers GitHub / Google.
+2. They send new content (+ optional note). It is stored as a PENDING
+   suggestion. Nothing appears publicly.
+3. The admin opens /admin/suggestions, sees current vs suggested, and clicks
+   Accept (the change is copied into the live cheatsheet and the public site
+   refreshes at once) or Reject (with an optional note the author can read).
+4. The member follows the status on /account.
 
-Suggestions
------------
-Suggestion {
-  cheatsheetId, sectionId, blockId?,
-  type: "edit" | "add",
-  proposed: { type, content, language? },
-  status: "pending" | "accepted" | "rejected",
-  authorId, note, createdAt
-}
+Sign-in (no auth library, ~150 lines)
+-------------------------------------
+- Standard OAuth "authorization code" flow for GitHub and Google.
+- The callback URL points at the FRONTEND origin (Next proxies /api to
+  Express), so the cookie belongs to the site the visitor is on.
+- Register these callback URLs with the providers:
+    <CLIENT_URL>/api/oauth/github/callback
+    <CLIENT_URL>/api/oauth/google/callback
+- backend/.env: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET. A provider is offered only when both of its values are
+  set. If none are set the site works exactly as before, just without sign-in.
+- Members get their own cookie (cheatdeck_user, 30 days). It is separate from
+  the admin cookie: a member session never grants admin access and vice versa.
+- We store only: provider, provider id, display name, avatar URL, banned flag.
+  No email address and no access token.
 
-Backend
--------
-controller/suggestion/   create, list (admin), accept, reject
-routers/suggestion.routes.ts
-Accept applies the proposal to the cheatsheet document and marks it done.
+API
+---
+GET  /api/oauth/providers             which sign-in buttons to show
+GET  /api/oauth/:provider             start (?next=/path to return afterwards)
+GET  /api/oauth/:provider/callback    provider returns here
+GET  /api/user/me                     signed-in member (401 if none)
+POST /api/user/logout
+POST /api/user/:id/ban                admin: { banned: true|false }
+POST /api/suggestions                 member: submit
+GET  /api/suggestions/mine            member: my suggestions
+GET  /api/suggestions?status=pending  admin: queue (oldest first)
+POST /api/suggestions/:id/accept      admin: { note? }
+POST /api/suggestions/:id/reject      admin: { note? }
 
-Frontend
---------
-features/suggestion/
-  components/suggest-button.tsx     on every block
-  components/suggestion-form.tsx
-  components/review-queue.tsx       admin: diff view, accept / reject
-
-Safety (required)
+Suggestion shapes
 -----------------
-- Sanitize all markdown and HTML from suggestions.
-- Rate-limit suggestions per user per day.
-- Report and ban flags on users.
-- Never render suggested content unreviewed on public pages.
+edit: { type:"edit", cheatsheetSlug, sectionId, blockId, content, language?, note }
+      changes a block's content (and language for code). Its type, badges and
+      runnable flag are kept.
+add:  { type:"add", cheatsheetSlug, sectionId, blockType:"text"|"code", content,
+        language?, note }
+      appended at the end of the section, never runnable automatically.
 
-Done when
----------
-A signed-in user can suggest an edit or a new block, and an admin can
-review and accept it into the live cheatsheet.
+Safety
+------
+- Only published cheatsheets can be targeted (drafts don't exist publicly).
+- Content max 10,000 chars, note max 500. Control characters are stripped.
+- Markdown is never rendered as raw HTML (react-markdown escapes it), so a
+  suggestion like <script>...</script> shows as harmless text even after it is
+  accepted. Verified in the browser.
+- Members can't set status/author (unknown fields are dropped).
+- Rate limit: 10 suggestions per member per rolling 24 hours (HTTP 429).
+- Banned members can still sign in but cannot submit (HTTP 403).
+- OAuth: CSRF "state" checked against a short-lived cookie; the post-login
+  redirect only accepts same-site relative paths (blocks open redirects);
+  provider data is cleaned (name length/control chars, https-only avatar).
+- Stale suggestions: the queue flags "block edited since the suggestion was
+  written" and disables Accept when the target no longer exists (the API also
+  answers 409). Double review answers 409.
+- Reserved slugs now also include "account" and "suggestions" (route clashes).
+
+Files
+-----
+backend/src/
+  utils/oauth.ts            pure OAuth helpers (injectable fetch, testable)
+  utils/userToken.ts        member cookie + JWT
+  utils/suggestions.ts      applySuggestion() - pure
+  utils/suggestion-view.ts  buildSuggestionViews() - pure
+  model/user.model.ts, model/suggestion.model.ts
+  validation/suggestion.schema.ts, validation/user.schema.ts
+  middleware/requireUser.ts
+  controller/oauth/*, controller/user/*, controller/suggestion/*
+  routers/oauth.routes.ts, user.routes.ts, suggestion.routes.ts
+frontend/src/
+  components/modal.tsx                 shared native <dialog> wrapper
+  features/user/                       MemberProvider, user menu, sign-in UI
+  features/suggestion/                 api, hooks, suggest button + dialog,
+                                       my-suggestions, review queue + card
+  app/account/page.tsx                 "My suggestions"
+  app/admin/(panel)/suggestions/page.tsx
+
+Notes / limits (kept simple on purpose)
+---------------------------------------
+- No "report" button: suggestions are only visible to the admin, so there is
+  nothing public to report. Banning covers abuse.
+- No email notifications when a suggestion is reviewed; members check /account.
+- Only "edit" and "add block" suggestions (no delete, no new sections/sheets).
+- Last write wins if two admins edit the same cheatsheet at the same moment.
