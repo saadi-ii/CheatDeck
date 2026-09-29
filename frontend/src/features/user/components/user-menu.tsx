@@ -28,7 +28,7 @@ export function UserMenu() {
 
   return (
     <div className="flex items-center gap-1">
-      <Button variant="ghost" size="sm" render={<Link href="/account" />}>
+      <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/account" />}>
         {member.name || "Account"}
       </Button>
       <Button variant="ghost" size="sm" onClick={() => void signOut()}>

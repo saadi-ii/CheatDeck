@@ -58,11 +58,11 @@ export function AdminTable() {
               {new Date(item.updatedAt).toLocaleDateString()}
             </TableCell>
             <TableCell className="space-x-1 text-right">
-              <Button variant="outline" size="sm" render={<Link href={`/admin/${item.slug}`} />}>
+              <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/admin/${item.slug}`} />}>
                 Edit
               </Button>
               {item.published && (
-                <Button variant="ghost" size="sm" render={<Link href={`/${item.slug}`} />}>
+                <Button variant="ghost" size="sm" nativeButton={false} render={<Link href={`/${item.slug}`} />}>
                   View
                 </Button>
               )}

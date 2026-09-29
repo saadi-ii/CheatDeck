@@ -25,7 +25,7 @@ export function SignInLinks() {
   return (
     <div className="flex flex-col gap-2">
       {providers.map((provider) => (
-        <Button key={provider} variant="outline" render={<a href={signInUrl(provider, pathname)} />}>
+        <Button key={provider} variant="outline" nativeButton={false} render={<a href={signInUrl(provider, pathname)} />}>
           {LABELS[provider]}
         </Button>
       ))}
