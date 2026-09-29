@@ -1,8 +1,11 @@
 import { ApiError, request } from "@/lib/http";
 import type { Cheatsheet, CheatsheetSummary } from "./types";
 
-// Public reads: cached for a minute, tagged so Phase 5 can revalidate on save.
-const cache = { next: { revalidate: 60, tags: ["cheatsheets"] } } satisfies RequestInit;
+/** Cache tag on every public read; the revalidate route invalidates it after an admin change. */
+export const CHEATSHEETS_TAG = "cheatsheets";
+
+// Public reads: cached for a minute as a safety net, and revalidated on demand after saves.
+const cache = { next: { revalidate: 60, tags: [CHEATSHEETS_TAG] } } satisfies RequestInit;
 
 export function getCheatsheets() {
   return request<CheatsheetSummary[]>("/cheatsheets", cache);
