@@ -1,6 +1,6 @@
 "use client";
 
-import { Code, Plus, Type } from "lucide-react";
+import { Code, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -64,13 +64,5 @@ export function SectionEditor({ section, index, count, actions }: SectionEditorP
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-export function AddSectionButton({ onClick }: { onClick: () => void }) {
-  return (
-    <Button variant="outline" onClick={onClick}>
-      <Plus /> Add section
-    </Button>
   );
 }
