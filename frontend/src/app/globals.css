@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -126,5 +126,76 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Shiki dual-theme output: each token carries --shiki-light / --shiki-dark. */
+.code-block pre,
+.code-block code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  background: transparent !important;
+}
+.code-block span {
+  color: var(--shiki-light);
+}
+.dark .code-block span {
+  color: var(--shiki-dark);
+}
+
+/* Rendered markdown for text blocks. */
+@layer components {
+  .markdown {
+    @apply text-sm leading-7;
+  }
+  .markdown > * + * {
+    @apply mt-3;
+  }
+  .markdown h1,
+  .markdown h2,
+  .markdown h3,
+  .markdown h4 {
+    @apply mt-6 font-semibold tracking-tight;
+  }
+  .markdown h1 {
+    @apply text-xl;
+  }
+  .markdown h2 {
+    @apply text-lg;
+  }
+  .markdown h3,
+  .markdown h4 {
+    @apply text-base;
+  }
+  .markdown ul {
+    @apply list-disc pl-6;
+  }
+  .markdown ol {
+    @apply list-decimal pl-6;
+  }
+  .markdown a {
+    @apply underline underline-offset-4;
+  }
+  .markdown blockquote {
+    @apply border-l-2 pl-4 text-muted-foreground;
+  }
+  .markdown :not(pre) > code {
+    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+  .markdown pre {
+    @apply overflow-x-auto rounded-lg border bg-muted/40 p-4 font-mono text-sm;
+  }
+  .markdown table {
+    @apply block w-full overflow-x-auto border-collapse;
+  }
+  .markdown th,
+  .markdown td {
+    @apply border px-3 py-1.5 text-left;
+  }
+  .markdown th {
+    @apply bg-muted font-medium;
   }
 }
