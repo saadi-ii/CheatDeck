@@ -10,6 +10,12 @@ const envSchema = z.object({
   CLIENT_URL: z.string().default("http://localhost:3000"),
   // Shared with the frontend; when unset, the frontend is not pinged after saves.
   REVALIDATE_SECRET: z.string().min(8).optional(),
+  // Community sign-in. A provider is offered only when both of its values are set.
+  // Callback URLs to register: <CLIENT_URL>/api/oauth/github/callback and .../google/callback
+  GITHUB_CLIENT_ID: z.string().min(1).optional(),
+  GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
