@@ -6,6 +6,10 @@ export interface Block {
   content: string;
   language?: string;
   runnable: boolean;
+  /** Version this was introduced in, shown as a badge (e.g. "15"). */
+  since?: string;
+  /** Version this was deprecated in, shown as a badge (e.g. "16"). */
+  deprecated?: string;
 }
 
 export interface Section {
