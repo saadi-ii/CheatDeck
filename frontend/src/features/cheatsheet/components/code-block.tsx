@@ -1,10 +1,13 @@
 import { bundledLanguages, codeToHtml } from "shiki";
+import { PlaygroundToggle } from "@/features/playground/components/playground-toggle";
+import { isRunnableLanguage } from "@/features/playground/lib/templates";
 import type { Block } from "../types";
 import { CopyButton } from "./copy-button";
 
 // Highlighted on the server: no highlighter code is shipped to the browser.
 export async function CodeBlock({ block }: { block: Block }) {
   const lang = block.language && block.language in bundledLanguages ? block.language : "text";
+  const runnable = block.runnable && isRunnableLanguage(block.language);
 
   const html = await codeToHtml(block.content, {
     lang,
@@ -19,6 +22,7 @@ export async function CodeBlock({ block }: { block: Block }) {
         <CopyButton text={block.content} />
       </div>
       <div className="code-block overflow-x-auto p-4 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
+      {runnable && <PlaygroundToggle code={block.content} language={block.language!} />}
     </div>
   );
 }
