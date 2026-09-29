@@ -1,0 +1,47 @@
+PHASE 6 - COMMUNITY (OPTIONAL)
+==============================
+
+Goal: let visitors suggest improvements. You approve every change.
+Only build this if the site gets real users.
+
+Auth
+----
+GitHub and Google sign-in (redirect flow, not popup). Roles: user, admin.
+Use user.model.ts (already a placeholder in backend/src/model).
+The single admin password login from Phase 1 can then be replaced by an
+admin role.
+
+Suggestions
+-----------
+Suggestion {
+  cheatsheetId, sectionId, blockId?,
+  type: "edit" | "add",
+  proposed: { type, content, language? },
+  status: "pending" | "accepted" | "rejected",
+  authorId, note, createdAt
+}
+
+Backend
+-------
+controller/suggestion/   create, list (admin), accept, reject
+routers/suggestion.routes.ts
+Accept applies the proposal to the cheatsheet document and marks it done.
+
+Frontend
+--------
+features/suggestion/
+  components/suggest-button.tsx     on every block
+  components/suggestion-form.tsx
+  components/review-queue.tsx       admin: diff view, accept / reject
+
+Safety (required)
+-----------------
+- Sanitize all markdown and HTML from suggestions.
+- Rate-limit suggestions per user per day.
+- Report and ban flags on users.
+- Never render suggested content unreviewed on public pages.
+
+Done when
+---------
+A signed-in user can suggest an edit or a new block, and an admin can
+review and accept it into the live cheatsheet.

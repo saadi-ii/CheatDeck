@@ -1,0 +1,47 @@
+PHASE 1 - BACKEND API
+=====================
+
+Goal: a working REST API with admin auth and cheatsheet CRUD.
+
+Files to create
+---------------
+server.ts                         connect DB, then listen
+src/app.ts                        express, cors (CLIENT_URL, credentials),
+                                  json, cookie-parser, routers, errorHandler
+src/config/env.ts                 zod-validated env, fails fast if missing
+src/db/db.ts                      mongoose.connect wrapper
+src/model/cheatsheet.model.ts     schema with embedded sections/blocks
+src/controller/auth/              login.ts, logout.ts, me.ts, index.ts
+src/controller/cheatsheet/        list.ts, get.ts, create.ts, update.ts,
+                                  remove.ts, index.ts
+src/routers/auth.routes.ts        POST /login, POST /logout, GET /me
+src/routers/cheatsheet.routes.ts  see routes below
+src/routers/index.ts              mounts all routers under /api
+src/middleware/requireAdmin.ts    verifies JWT cookie
+src/middleware/validate.ts        zod body validation
+src/middleware/errorHandler.ts    one place for error responses
+src/utils/asyncHandler.ts, ApiError.ts
+
+Routes
+------
+POST   /api/auth/login             password -> sets httpOnly JWT cookie
+POST   /api/auth/logout            clears cookie
+GET    /api/auth/me                200 if admin, 401 otherwise
+GET    /api/cheatsheets            list (published only unless admin)
+GET    /api/cheatsheets/:slug      one cheatsheet (draft only for admin)
+POST   /api/cheatsheets            create        (admin)
+PUT    /api/cheatsheets/:slug      save whole document (admin)
+DELETE /api/cheatsheets/:slug      delete        (admin)
+
+Rules
+-----
+- Slugs are unique and validated (lowercase, dashes).
+- List returns a summary only (no sections) to stay light.
+- Cookie: httpOnly, sameSite lax, secure in production.
+- Compare admin password with timing-safe compare.
+- Rate-limit login (simple in-memory counter is enough at this size).
+
+Done when
+---------
+All routes work from a REST client, drafts are hidden from the public,
+and invalid input returns clear 400 errors.

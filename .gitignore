@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# env files (keep the examples)
+.env
+.env.*
+!.env.example
+
+# builds
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# coverage
+coverage/

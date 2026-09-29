@@ -1,0 +1,67 @@
+CHEATDECK - OVERVIEW
+====================
+
+Goal
+----
+A small, lightweight website of developer cheatsheets (Next.js, React, ...).
+Each cheatsheet has sections (Routing, API routes, ...) made of blocks
+(markdown text and code). Everything is managed from an admin area in the
+browser, so content never requires a code change. Code blocks can be run in
+an in-browser playground.
+
+Stack
+-----
+Frontend : Next.js 16 (App Router), Tailwind 4, shadcn/ui, TanStack Query + Form
+Backend  : Express 5, Mongoose 9, MongoDB, Zod, JWT (httpOnly cookie)
+Playground: Sandpack (lazy loaded, only on "Run")
+Package manager: npm. Two folders in one git repo, no monorepo tooling.
+
+Data model (one collection)
+---------------------------
+Cheatsheet {
+  slug, title, icon, version, published,
+  sections: [ { id, title, blocks: [ { id, type: "text" | "code",
+                                       content, language?, runnable? } ] } ]
+}
+
+Folder structure
+----------------
+backend/
+  server.ts               boot: connect DB, listen
+  src/app.ts              express app, middleware, mount routers
+  src/config/             validated env
+  src/db/                 mongoose connection
+  src/model/              mongoose models
+  src/controller/<feature>/  one function per file + index.ts
+  src/routers/            one router per feature + index.ts
+  src/middleware/         requireAdmin, errorHandler, validate
+  src/utils/              asyncHandler, ApiError
+frontend/src/
+  app/                    routes only (thin pages)
+  components/ui/          shadcn components only
+  features/<feature>/     components/, hooks/, api.ts, types.ts
+  lib/                    http wrapper, query client, utils
+  providers/              query + theme providers
+  proxy.ts                protects /admin routes
+
+Modularity rules
+----------------
+1. One function per controller file, re-exported from the folder index.ts.
+2. Routers only wire URLs to controllers. No logic in routers.
+3. Frontend pages are thin. Logic lives in features/<feature>/hooks.
+4. Only features/<feature>/api.ts talks to the backend.
+5. A feature can be deleted by removing its folder (frontend) or its
+   controller/router/model files (backend).
+
+Phases
+------
+Phase 0 - Cleanup and setup        (docs/phase-0-setup.txt)
+Phase 1 - Backend API              (docs/phase-1-backend.txt)
+Phase 2 - Public site              (docs/phase-2-public-site.txt)
+Phase 3 - Admin editor             (docs/phase-3-admin.txt)
+Phase 4 - Playground               (docs/phase-4-playground.txt)
+Phase 5 - Polish                   (docs/phase-5-polish.txt)
+Phase 6 - Community (optional)     (docs/phase-6-community.txt)
+
+Phases 0-3 give a complete working site. Phase 4 adds practice.
+Phases 5-6 are optional extras.

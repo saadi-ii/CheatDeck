@@ -1,0 +1,34 @@
+PHASE 5 - POLISH
+================
+
+Goal: make the site feel finished. All items are independent.
+
+Items
+-----
+1. Revalidation (ISR)
+   Public pages are cached. Saving in admin calls a revalidate endpoint so
+   changes appear immediately without hurting speed.
+   Backend calls Next's revalidate route (secret in env) after PUT/DELETE.
+
+2. Search
+   Mongo text index over title and block content, GET /api/search?q=
+   Frontend: shadcn Command palette opened with Ctrl+K.
+
+3. Version badges
+   Per cheatsheet "version" plus optional per-block "since" and
+   "deprecated" fields, shown as small badges. Add stale flag when a
+   cheatsheet has not been updated in 60 days (admin list only).
+
+4. Import / export
+   Admin buttons to download a cheatsheet as JSON and upload one.
+   Serves as backup and makes bulk seeding easy.
+
+5. Extras (only if wanted)
+   - Table block type
+   - Per-section anchor links
+   - SEO metadata and OpenGraph image per cheatsheet
+
+Done when
+---------
+Edits show up on the public site instantly, Ctrl+K finds any block, and
+badges show which features are new or deprecated.

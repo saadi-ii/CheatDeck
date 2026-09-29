@@ -1,0 +1,27 @@
+PHASE 0 - CLEANUP AND SETUP
+===========================
+
+Goal: a clean, consistent base so later phases only add features.
+
+Tasks
+-----
+[x] Delete frontend/.git (nested repo) so the root repo tracks everything.
+[x] Backend package.json cleanup: typescript/tsx now devDependencies, removed
+    the "node" package, nodemon, and stale @types packages. Added dotenv, zod.
+[x] Backend scripts: dev (tsx watch), build (tsc), start, typecheck.
+[x] Backend tsconfig.json (NodeNext, strict), .env.example, .gitignore.
+[x] Removed broken/empty stubs (login.js, db.js, user controller/router).
+[x] Frontend: renamed package, fixed "@/*" alias to ./src/*.
+[x] Frontend: installed TanStack Query, TanStack Form, zod.
+[x] Frontend: shadcn/ui initialised (button, utils).
+[ ] Frontend: add .env.example (NEXT_PUBLIC_API_URL) and root README notes.
+[ ] Verify: backend typecheck passes, frontend builds.
+
+Environment variables
+---------------------
+backend/.env          PORT, MONGO_URI, JWT_SECRET, ADMIN_PASSWORD, CLIENT_URL
+frontend/.env.local   NEXT_PUBLIC_API_URL (e.g. http://localhost:5000)
+
+Done when
+---------
+Both apps install and typecheck cleanly with no leftover stubs.

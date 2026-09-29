@@ -1,0 +1,40 @@
+PHASE 2 - PUBLIC SITE
+=====================
+
+Goal: readers can browse and read cheatsheets. Fast and mostly static.
+
+Pages
+-----
+app/page.tsx            home: grid of published cheatsheets
+app/[slug]/page.tsx     one cheatsheet: section sidebar + blocks
+app/not-found.tsx       simple 404
+
+Files to create
+---------------
+lib/http.ts                       fetch wrapper (base URL, errors)
+lib/query-client.ts               TanStack Query client factory
+providers/query-provider.tsx      QueryClientProvider
+providers/theme-provider.tsx      dark mode
+features/cheatsheet/types.ts      Cheatsheet, Section, Block types
+features/cheatsheet/api.ts        getCheatsheets, getCheatsheet
+features/cheatsheet/components/
+  cheatsheet-card.tsx             card on the home page
+  section-nav.tsx                 sidebar / table of contents
+  block-renderer.tsx              switches on block.type
+  text-block.tsx                  markdown rendering (sanitized)
+  code-block.tsx                  highlighted code + copy button
+components/ui/                    add via shadcn: card, badge, button, ...
+
+Notes
+-----
+- Server-render pages and fetch on the server (no client JS for reading).
+- Syntax highlighting on the server (Shiki) so it ships no client code.
+- Block renderer is a map {type -> component}. Adding a new block type
+  later means adding one component and one map entry.
+- Before writing Next code, read node_modules/next/dist/docs/ (Next 16
+  differs from older versions; see frontend/AGENTS.md).
+
+Done when
+---------
+Home lists cheatsheets, each page shows sections and blocks, copy button
+and dark mode work, and the page is usable on a phone.

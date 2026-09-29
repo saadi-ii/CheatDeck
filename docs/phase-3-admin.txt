@@ -1,0 +1,45 @@
+PHASE 3 - ADMIN EDITOR
+======================
+
+Goal: create and edit everything from the browser, with no code changes.
+
+Pages
+-----
+app/admin/login/page.tsx     password form
+app/admin/page.tsx           list: new, publish toggle, delete
+app/admin/[slug]/page.tsx    editor for one cheatsheet
+proxy.ts                     redirects /admin/* to login when not signed in
+
+Files to create
+---------------
+features/auth/
+  api.ts                      login, logout, me
+  hooks/use-session.ts        TanStack Query around /auth/me
+  components/login-form.tsx   TanStack Form + zod
+features/cheatsheet/
+  hooks/                      use-cheatsheets, use-save-cheatsheet, ...
+  components/admin-table.tsx  list with actions
+features/editor/
+  components/
+    editor-shell.tsx          layout: meta panel + sections
+    meta-form.tsx             title, slug, icon, version, published
+    section-editor.tsx        section title, add/remove/move blocks
+    block-editor.tsx          switches on block.type
+    text-block-editor.tsx     textarea + markdown preview
+    code-block-editor.tsx     language select, code textarea, runnable toggle
+    add-block-menu.tsx        "+" menu (text, code)
+  hooks/use-editor-state.ts   local draft state and reorder helpers
+  lib/reorder.ts              pure move up/down functions
+
+Behavior
+--------
+- Editing happens on a local draft. Save sends one PUT with the document.
+- Reordering uses up/down buttons (no drag-and-drop library).
+- Show unsaved-changes warning and a Save button state.
+- Publish toggle switches between draft and published.
+- Invalidate TanStack Query caches after save so lists refresh.
+
+Done when
+---------
+You can log in, create a cheatsheet, add sections and blocks, reorder,
+save, publish, and see it on the public site.
